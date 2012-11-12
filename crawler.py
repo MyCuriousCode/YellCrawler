@@ -1,5 +1,6 @@
 import urllib
 import time
+import sys
 
 class crawler:
 	pages = []
@@ -13,12 +14,13 @@ class crawler:
 		self.location = locationInput
 
 	def createPages(self):
-		if self.keyword != "" or self.location != "":
+		if self.keyword != "" and self.location != "":
 			for i in range(1,100):
 				page = 'http://www.yell.com/ucs/UcsSearchAction.do?startAt=10&keywords='+self.keyword+'&location='+self.location+'&scrambleSeed=18441148&ssm=1&showOoa=10&ppcStartAt=0&pageNum=%s' % i
 				self.pages.append(page)
 		else:
-			print "Location or Keyword not set\nUse setKeyword or setLocation functions"
+			print "Location or Keyword not set\nUse setKeyword or setLocation functions before precedding"
+			sys.exit(0)
 
 	def crawl(self,inputDiv):
 		# Company
@@ -57,6 +59,8 @@ class crawler:
 		streetAddressStop = inputDiv.find(endSpanStr,streetAddressStart)
 		if streetAddressStart > -1:
 			streetAddress = inputDiv[streetAddressStart+len(streetAddressStr):streetAddressStop]
+			streetAddress = streetAddress.strip()
+			streetAddress = streetAddress.replace(",","")
 		else:
 			streetAddress = ''
 
@@ -72,9 +76,18 @@ class crawler:
 		# Region
 		regionStr = '<span class="region">'
 		regionStart = inputDiv.find(regionStr)
-		regionEnd = inputDiv.find('</span>',regionStart)
+
+		if regionStart == -1:
+			regionStr = '<span class="region"><strong>'
+			regionStart = inputDiv.find(regionStr)
+			regionEnd = inputDiv.find('</strong>',regionStart)
+		else:
+			regionEnd = inputDiv.find('</span>',regionStart)
+
 		if regionStart > -1:
 			region = inputDiv[regionStart+len(regionStr):regionEnd]
+			region = region.replace('<strong>','')
+			region = region.replace('</strong>','')
 		else:
 			region = ''
 
@@ -84,6 +97,7 @@ class crawler:
 		postcodeStop = inputDiv.find(endSpanStr,postcodeStart)
 		if postcodeStart > -1:
 			postcode = inputDiv[postcodeStart+len(postcodeStr):postcodeStop]
+			postcode = postcode.replace('  ',' ')
 		else:
 			postcode = ''
 
@@ -95,6 +109,7 @@ class crawler:
 			keyword = inputDiv[keywordStart+len(keywordStr):keywordEnd]
 			keyword = keyword[keyword.find('">')+2:keywordEnd]
 			keyword = keyword.replace('&amp;','&')
+			keyword = keyword.replace('"','')
 		else:
 			keyword = ''
 		
@@ -123,8 +138,8 @@ class crawler:
 		if self.pages:
 			i = 0
 			for page in self.pages:
-				#f = urllib.urlopen(page)
-				f = urllib.urlopen('index.html')
+				f = urllib.urlopen(page)
+				#f = urllib.urlopen('index.html')
 				f = f.read()
 
 				while f:
@@ -139,7 +154,6 @@ class crawler:
 					else:
 						break
 
-				time.sleep(20)
-		else:
-			print "Something went wrong"
+				time.sleep(15)
+			
 

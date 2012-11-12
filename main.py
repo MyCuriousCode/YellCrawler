@@ -1,8 +1,6 @@
 import crawler
 
 myCrawl = crawler.crawler()
-myCrawl.setKeyword('Test')
-myCrawl.setLocation('Berkshire')
-
-
+myCrawl.setKeyword('Restaurant')
+myCrawl.setLocation('Surrey')
 myCrawl.start()
